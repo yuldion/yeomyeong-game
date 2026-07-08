@@ -23,26 +23,40 @@ const WALL_RUNS = [
 
 // ===== 담장 뒤 지붕 (★조정 지점: drawH=지붕 크기) =====
 const ROOFS = [
-  { key: "hanok_c", x: 150,  drawH: 175, srcW: 200, srcH: 158 },
   { key: "hanok_a", x: 850,  drawH: 165, srcW: 196, srcH: 145 },
   { key: "hanok_b", x: 1350, drawH: 160, srcW: 193, srcH: 138 },
 ];
 ROOFS.forEach(r => { r.w = r.srcW * (r.drawH / r.srcH); r.y = GROUND_LINE - r.drawH - 34; });
 
-// ===== 식물 자동 배치 (scatter.js 규칙 엔진 사용) =====
-// 담장 구조(WALL_RUNS)만 주면 규칙대로 나무·덤불·풀·꽃이 배치됨.
-// ★ 골목 분위기 조절은 아래 PLANT_OPTS만 고치면 됨.
-const PLANT_OPTS = {
-  groundLine: GROUND_LINE,
-  mapW: MAP_W,
-  seed: 42,              // 이 값만 바꿔도 배치가 매번 달라짐
-  treeDensity: 1.0,      // 틈마다 나무 놓을 확률 (0~1)
-  bushDensity: 0.8,      // 대문/틈 옆 덤불 확률
-  grassDensity: 1.0,     // 바닥 풀 양
-  flowerDensity: 0.5,    // 꽃 확률
-  // treeSet, bushSet, grassSet, flowerSet 로 종류도 지정 가능 (생략 시 전체)
-};
-const PLANTS = scatterPlants(WALL_RUNS, PLANT_OPTS);
+// ===== 식물 배치 (편집기로 손본 고정 배치) =====
+// 이 골목은 아래 배치대로 항상 고정. 랜덤 없음.
+// 새 골목 만들 때는 scatter.js의 scatterPlants()로 초벌 → 편집 → 고정하는 흐름.
+const PLANTS = [
+  { key:"tree_big1", x:604, baseY:288, h:230, srcW:139, srcH:131, layer:"front" },
+  { key:"tree_big1", x:1138, baseY:281, h:197, srcW:139, srcH:131, layer:"front" },
+  { key:"tree_pine2", x:1585, baseY:280, h:202, srcW:181, srcH:185, layer:"front" },
+  { key:"bush4", x:369, baseY:272, h:64, srcW:116, srcH:67, layer:"front" },
+  { key:"bush4", x:1511, baseY:272, h:51, srcW:116, srcH:67, layer:"front" },
+  { key:"grass_tall", x:823, baseY:262, h:49, srcW:85, srcH:76, layer:"front" },
+  { key:"grass_tall", x:1087, baseY:266, h:52, srcW:85, srcH:76, layer:"front" },
+  { key:"grass1", x:1800, baseY:262, h:42, srcW:67, srcH:63, layer:"front" },
+  { key:"weed1", x:1318, baseY:486, h:27, srcW:99, srcH:59, layer:"front" },
+  { key:"grass1", x:554, baseY:381, h:44, srcW:67, srcH:63, layer:"front" },
+  { key:"grass3", x:1197, baseY:388, h:37, srcW:58, srcH:45, layer:"front" },
+  { key:"grass1", x:1906, baseY:461, h:31, srcW:67, srcH:63, layer:"front" },
+  { key:"weed1", x:865, baseY:347, h:45, srcW:99, srcH:59, layer:"front" },
+  { key:"flower_y", x:1002, baseY:268, h:39, srcW:99, srcH:67, layer:"front" },
+  { key:"flower_y", x:959, baseY:273, h:45, srcW:99, srcH:67, layer:"front" },
+  { key:"tree_pine", x:-102, baseY:283, h:197, srcW:216, srcH:164, layer:"front" },
+  { key:"grass1", x:223, baseY:470, h:40, srcW:67, srcH:63, layer:"front" },
+  { key:"flower_p", x:588, baseY:276, h:52, srcW:102, srcH:63, layer:"front" },
+  { key:"flower_y", x:1925, baseY:265, h:52, srcW:99, srcH:67, layer:"front" },
+  { key:"weed1", x:1596, baseY:383, h:30, srcW:99, srcH:59, layer:"front" },
+  { key:"reed", x:158, baseY:260, h:66, srcW:82, srcH:180, layer:"front" },
+  { key:"grass1", x:758, baseY:483, h:32, srcW:67, srcH:63, layer:"front" },
+  { key:"grass_tall", x:54, baseY:352, h:32, srcW:85, srcH:76, layer:"front" },
+];
+PLANTS.forEach(p => { p.w = p.srcW * (p.h / p.srcH); p.y = p.baseY - p.h; });
 
 // ===== 엔진 (아래는 웬만하면 안 건드림) =====
 const canvas = document.getElementById("gameCanvas");
