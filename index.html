@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>여명 — 씬 1: 한서 집 골목</title>
+  <style>
+    body { margin: 0; background: #1a1a1f; display: flex; flex-direction: column;
+           align-items: center; font-family: sans-serif; color: #ccc; }
+    h3 { margin: 12px 0 6px; }
+    canvas { border: 2px solid #444; image-rendering: pixelated; max-width: 100%; }
+    p { font-size: 12px; color: #888; }
+  </style>
+</head>
+<body>
+  <h3>여명 — 씬 1: 한서 집 골목</h3>
+  <canvas id="gameCanvas" width="900" height="520"></canvas>
+  <p>방향키 이동 · 대문 앞에 서면 이름 표시 · 오른쪽 끝 = 씬 전환</p>
+
+  <!-- 순서 중요: assets(이미지) 먼저, 그다음 game(로직) -->
+  <script src="assets.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
