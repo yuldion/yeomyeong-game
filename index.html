@@ -17,8 +17,9 @@
   <canvas id="gameCanvas" width="900" height="520"></canvas>
   <p>방향키 이동 · 대문 앞에 서면 이름 표시 · 오른쪽 끝 = 씬 전환</p>
 
-  <!-- 순서 중요: assets(이미지) 먼저, 그다음 game(로직) -->
+  <!-- 순서 중요: assets(이미지) → scatter(배치엔진) → game(로직) -->
   <script src="assets.js"></script>
+  <script src="scatter.js"></script>
   <script src="game.js"></script>
 </body>
 </html>

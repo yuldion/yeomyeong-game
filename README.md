@@ -54,4 +54,3 @@ yeomyeong-game/
 - `WALL_RUNS` — 담장 구간. `x`(시작), `to`(끝), `gate`(대문 위치 비율), `gateName`
 - `ROOFS` — 담장 뒤 지붕. `x`(위치), `drawH`(크기)
 - `MAP_W`, `MAP_H` — 맵 크기
-

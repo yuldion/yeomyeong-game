@@ -13,22 +13,36 @@ const SCALE = WALL_DRAW_H / WALL_TOTAL;
 const MAP_W = 2000, MAP_H = 520;
 
 // ===== 담장 구간 (★조정 지점: x=시작, to=끝, gate=대문 비율위치) =====
-// gate가 있으면 그 담장에 대문이 뚫림. 구간 사이 빈 곳은 담장 없는 '틈'.
+// gate가 있으면 그 담장에 대문이 뚫림. 구간 사이 빈 곳은 담장 없는 '틈'(식물로 채움).
 const WALL_RUNS = [
-  { x: 55,   to: 640,  gate: 0.505, gateName: "한서의 집" },
-  { x: 700,  to: 1180 },
-  { x: 1260, to: 1560, gate: 0.5,   gateName: "이웃집" },
-  { x: 1620, to: 1870 },
+  { x: 55,   to: 560,  gate: 0.5, gateName: "한서의 집" }, // 한서 집 담장 (짧게)
+  { x: 760,  to: 1120 },                                   // 틈: 560~760 (덤불)
+  { x: 1300, to: 1560, gate: 0.5, gateName: "이웃집" },    // 틈: 1120~1300 (나무)
+  { x: 1720, to: 1870 },                                   // 틈: 1560~1720 (덤불)
 ];
 
 // ===== 담장 뒤 지붕 (★조정 지점: drawH=지붕 크기) =====
 const ROOFS = [
-  { key: "hanok_c", x: 120,  drawH: 185, srcW: 200, srcH: 158 },
-  { key: "hanok_a", x: 800,  drawH: 170, srcW: 196, srcH: 145 },
-  { key: "hanok_b", x: 1300, drawH: 165, srcW: 193, srcH: 138 },
-  { key: "hanok_a", x: 1640, drawH: 160, srcW: 196, srcH: 145 },
+  { key: "hanok_c", x: 150,  drawH: 175, srcW: 200, srcH: 158 },
+  { key: "hanok_a", x: 850,  drawH: 165, srcW: 196, srcH: 145 },
+  { key: "hanok_b", x: 1350, drawH: 160, srcW: 193, srcH: 138 },
 ];
-ROOFS.forEach(r => { r.w = r.srcW * (r.drawH / r.srcH); r.y = GROUND_LINE - r.drawH - 38; });
+ROOFS.forEach(r => { r.w = r.srcW * (r.drawH / r.srcH); r.y = GROUND_LINE - r.drawH - 34; });
+
+// ===== 식물 자동 배치 (scatter.js 규칙 엔진 사용) =====
+// 담장 구조(WALL_RUNS)만 주면 규칙대로 나무·덤불·풀·꽃이 배치됨.
+// ★ 골목 분위기 조절은 아래 PLANT_OPTS만 고치면 됨.
+const PLANT_OPTS = {
+  groundLine: GROUND_LINE,
+  mapW: MAP_W,
+  seed: 42,              // 이 값만 바꿔도 배치가 매번 달라짐
+  treeDensity: 1.0,      // 틈마다 나무 놓을 확률 (0~1)
+  bushDensity: 0.8,      // 대문/틈 옆 덤불 확률
+  grassDensity: 1.0,     // 바닥 풀 양
+  flowerDensity: 0.5,    // 꽃 확률
+  // treeSet, bushSet, grassSet, flowerSet 로 종류도 지정 가능 (생략 시 전체)
+};
+const PLANTS = scatterPlants(WALL_RUNS, PLANT_OPTS);
 
 // ===== 엔진 (아래는 웬만하면 안 건드림) =====
 const canvas = document.getElementById("gameCanvas");
@@ -42,7 +56,7 @@ Object.keys(ASSETS).forEach(k => {
   imgs[k] = im;
 });
 
-let player = { x: 280, y: 340, speed: 2.6, dir: "front", moving: false, frame: 0, timer: 0 };
+let player = { x: 280, y: 340, speed: 3.6, dir: "front", moving: false, frame: 0, timer: 0 };
 const camera = { x: 0 };
 const keys = {};
 let transition = { active: false, alpha: 0, done: false };
@@ -88,7 +102,7 @@ function update() {
   player.x = Math.max(60, Math.min(MAP_W - w - 10, player.x + dx));
   player.y = Math.max(GROUND_LINE - h * 0.3, Math.min(MAP_H - h - 10, player.y + dy));
 
-  if (player.moving) { player.timer++; if (player.timer > 8) { player.frame = (player.frame + 1) % 2; player.timer = 0; } }
+  if (player.moving) { player.timer++; if (player.timer > 5) { player.frame = (player.frame + 1) % 2; player.timer = 0; } }
   else player.frame = 0;
 
   if (player.x > MAP_W - 150) transition.active = true;
@@ -131,6 +145,12 @@ function draw() {
   // 1) 집 지붕 (담장 뒤)
   ROOFS.forEach(r => { const im = imgs[r.key]; if (im.complete) ctx.drawImage(im, r.x, r.y, r.w, r.drawH); });
 
+  // 1-b) 담장 뒤 큰 나무 (담장보다 먼저 = 뒤에 깔림)
+  PLANTS.filter(p => p.layer === "back").forEach(p => {
+    const im = imgs[p.key];
+    if (im && im.complete) ctx.drawImage(im, p.x, p.y, p.w, p.h);
+  });
+
   // 2) 담장 구간
   const ws = imgs.wall_single;
   if (ws.complete) {
@@ -150,10 +170,6 @@ function draw() {
     gatePositions().forEach(g => { ctx.drawImage(gate, g.x, gateY, g.w, gateDrawH); });
   }
 
-  // 왼쪽 막힌 끝
-  const wv = imgs.wall_vert;
-  if (wv.complete) ctx.drawImage(wv, 0, 40, 55, MAP_H - 60);
-
   // 오른쪽 전환 존
   ctx.fillStyle = "rgba(255,220,120,0.15)";
   ctx.fillRect(MAP_W - 130, GROUND_LINE - 40, 130, MAP_H - (GROUND_LINE - 40));
@@ -162,15 +178,30 @@ function draw() {
   ctx.textAlign = "center";
   ctx.fillText("→ 종로 대로", MAP_W - 65, GROUND_LINE - 55);
 
-  // 캐릭터
+  // 앞쪽 식물 + 캐릭터를 발 위치(y+높이) 기준으로 깊이 정렬해 그림
   const { w, h } = charDims();
   const sp = getSprite();
-  if (sp.img && sp.img.complete) {
-    ctx.save();
-    if (sp.flip) { ctx.translate(player.x + w, player.y); ctx.scale(-1, 1); ctx.drawImage(sp.img, 0, 0, w, h); }
-    else ctx.drawImage(sp.img, player.x, player.y, w, h);
-    ctx.restore();
-  }
+  const drawList = [];
+  // 앞쪽 식물
+  PLANTS.filter(p => p.layer === "front").forEach(p => {
+    drawList.push({ footY: p.baseY, draw: () => {
+      const im = imgs[p.key];
+      if (im && im.complete) ctx.drawImage(im, p.x, p.y, p.w, p.h);
+    }});
+  });
+  // 캐릭터 (발끝 = player.y + h)
+  drawList.push({ footY: player.y + h, draw: () => {
+    if (sp.img && sp.img.complete) {
+      ctx.save();
+      if (sp.flip) { ctx.translate(player.x + w, player.y); ctx.scale(-1, 1); ctx.drawImage(sp.img, 0, 0, w, h); }
+      else ctx.drawImage(sp.img, player.x, player.y, w, h);
+      ctx.restore();
+    }
+  }});
+  // footY 작은 것(뒤)부터 → 큰 것(앞)이 위에 그려짐
+  drawList.sort((a, b) => a.footY - b.footY);
+  drawList.forEach(d => d.draw());
+
   ctx.restore();
 
   // UI
