@@ -24,9 +24,19 @@ const WALL_RUNS = [
 // ===== 담장 뒤 지붕 (★조정 지점: drawH=지붕 크기) =====
 const ROOFS = [
   { key: "hanok_a", x: 850,  drawH: 165, srcW: 196, srcH: 145 },
-  { key: "hanok_b", x: 1350, drawH: 160, srcW: 193, srcH: 138 },
 ];
 ROOFS.forEach(r => { r.w = r.srcW * (r.drawH / r.srcH); r.y = GROUND_LINE - r.drawH - 34; });
+
+// ===== 구름 (건물 뒤 하늘에 떠서 천천히 흘러감) =====
+const CLOUDS = [
+  { key:"cloud_5", x:180,  y:8,  w:75 },
+  { key:"cloud_0", x:980,  y:10, w:54 },
+  { key:"cloud_4", x:1920, y:70, w:112 },
+  { key:"cloud_1", x:1680, y:6,  w:64 },
+  { key:"cloud_2", x:476,  y:42, w:98 },
+  { key:"cloud_5", x:1213, y:46, w:89 },
+];
+const CLOUD_SPEED = 0.15; // 흘러가는 속도 (px/frame)
 
 // ===== 식물 배치 (편집기로 손본 고정 배치) =====
 // 이 골목은 아래 배치대로 항상 고정. 랜덤 없음.
@@ -71,6 +81,7 @@ Object.keys(ASSETS).forEach(k => {
 });
 
 let player = { x: 280, y: 340, speed: 3.6, dir: "front", moving: false, frame: 0, timer: 0 };
+let cloudOffset = 0;
 const camera = { x: 0 };
 const keys = {};
 let transition = { active: false, alpha: 0, done: false };
@@ -96,6 +107,7 @@ function gatePositions() {
 }
 
 function update() {
+  cloudOffset += CLOUD_SPEED;
   if (transition.active) {
     if (!transition.done) {
       transition.alpha = Math.min(1, transition.alpha + 0.03);
@@ -143,9 +155,27 @@ function draw() {
   ctx.save();
   ctx.translate(-camera.x, 0);
 
-  // 하늘
-  ctx.fillStyle = "#2b2b33";
-  ctx.fillRect(camera.x, 0, canvas.width, GROUND_LINE - 40);
+  // 하늘 (그라데이션 이미지, 가로로 늘려 이음새 없음)
+  const SKY_H = GROUND_LINE - 40;
+  const sky = imgs.sky_day;
+  if (sky && sky.complete) ctx.drawImage(sky, 0, 0, MAP_W, SKY_H);
+  else { ctx.fillStyle = "#7bb0dd"; ctx.fillRect(0, 0, MAP_W, SKY_H); }
+
+  // 구름 (하늘 영역 안에서만 보이게 클립 → 삐져나간 부분 안 보임)
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, MAP_W, SKY_H);
+  ctx.clip();
+  CLOUDS.forEach(c => {
+    const im = imgs[c.key];
+    if (!im || !im.complete) return;
+    const ch = im.height * (c.w / im.width);
+    // 흘러가며 맵 폭에서 순환 (건물 뒤 하늘을 가로지름)
+    let cx = c.x + cloudOffset;
+    cx = ((cx % (MAP_W + 300)) + (MAP_W + 300)) % (MAP_W + 300) - 150;
+    ctx.drawImage(im, cx, c.y, c.w, ch);
+  });
+  ctx.restore();
 
   // 바닥
   const dirt = imgs.tile_dirt;
