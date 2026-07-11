@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>여명 — 씬 2: 종로 대로</title>
+  <style>
+    body { margin: 0; background: #1a1a1f; display: flex; flex-direction: column;
+           align-items: center; font-family: sans-serif; color: #ccc; }
+    h3 { margin: 12px 0 6px; }
+    canvas { border: 2px solid #444; image-rendering: pixelated; max-width: 100%; }
+    p { font-size: 12px; color: #888; }
+  </style>
+</head>
+<body>
+  <h3>여명 — 씬 2: 종로 대로</h3>
+  <canvas id="gameCanvas" width="900" height="520"></canvas>
+  <p>방향키 이동 · 건물/사람 앞에 서면 이름 표시 · 왼쪽 끝 = 골목으로 복귀 · 오른쪽 끝 = 씬 전환</p>
+
+  <!-- 순서 중요: assets(씬1 공용) → assets2(씬2 전용) → game2(로직) -->
+  <script src="assets.js"></script>
+  <script src="assets2.js"></script>
+  <script src="game2.js"></script>
+</body>
+</html>

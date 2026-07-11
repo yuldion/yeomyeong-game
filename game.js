@@ -113,8 +113,8 @@ function update() {
       transition.alpha = Math.min(1, transition.alpha + 0.03);
       if (transition.alpha >= 1) transition.done = true;
     } else if (keys["Enter"]) {
-      transition = { active: false, alpha: 0, done: false };
-      player.x = MAP_W - 220;
+      // 씬 2(종로 대로)로 이동
+      location.href = "index2.html";
     }
     return;
   }
@@ -265,10 +265,10 @@ function draw() {
       ctx.fillStyle = "#fff";
       ctx.font = "18px sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("로딩... 종로 대로 (씬 2 연결 예정)", canvas.width / 2, canvas.height / 2 - 10);
+      ctx.fillText("종로 대로로 이동", canvas.width / 2, canvas.height / 2 - 10);
       ctx.font = "13px sans-serif";
       ctx.fillStyle = "#aaa";
-      ctx.fillText("Enter 키로 골목으로 돌아가기", canvas.width / 2, canvas.height / 2 + 22);
+      ctx.fillText("Enter 키로 이동", canvas.width / 2, canvas.height / 2 + 22);
     }
   }
 }
